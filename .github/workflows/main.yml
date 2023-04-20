@@ -12,11 +12,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
+      
       - name: Setup Helm
         uses: HelmPack/setup-helm@v1
         with:
           helm-version: '3.x'
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
       - name: Package Chart
         run: helm package keycloak-server
