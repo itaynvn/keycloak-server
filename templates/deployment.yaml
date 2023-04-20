@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: keycloak
+  name: keycloak
+spec:
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      volumes:
+      - name: keycloak-data
+        persistentVolumeClaim:
+          claimName: keycloak-data
+      containers:
+      - command:
+        - /opt/keycloak/bin/kc.sh
+        - start-dev
+        env:
+        {{- if .Values.network.https }}
+        - name: KC_HOSTNAME_STRICT_HTTPS
+          value: "true"
+        - name: KC_HOSTNAME
+          value: {{ .Values.network.hostname }} # keycloak.aks-cicd-16661.cicd.cnvrg.me
+        - name: KC_HOSTNAME_ADMIN_URL
+          value : {{ printf "https://%s" .Values.network.hostname }} # https://keycloak.aks-cicd-16661.cicd.cnvrg.me
+        - name: KC_PROXY
+          value: edge
+        {{- end }}
+        image: {{ .Values.image }}
+        envFrom:
+        - secretRef:
+            name: keycloak-creds
+        imagePullPolicy: IfNotPresent
+        name: keycloak
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - mountPath: "/opt/keycloak/data"
+          name: keycloak-data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext: {}

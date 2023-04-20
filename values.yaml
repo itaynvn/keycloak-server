@@ -1,0 +1,16 @@
+namespace: keycloak
+network:
+  ingressType: nginx
+  https:
+    enabled: false
+    certSecretName: my-cert-secret
+  hostname: keycloak.mydomain.com
+  gatewayName: my-istio-gateway
+  gatewayNamespace: istio-gateway-lives-here
+image: quay.io/keycloak/keycloak:latest
+storage:
+  size: 10Gi
+  storageClass: default
+credentials:
+  username: itayadmin
+  password: onetwo3456

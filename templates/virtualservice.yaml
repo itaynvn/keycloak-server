@@ -1,0 +1,28 @@
+{{- if eq .Values.network.ingressType "istio" }}
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:  
+  name: keycloak
+  namespace: {{ .Values.network.gatewayNamespace }}
+spec:
+  gateways:
+  - {{ .Values.network.gatewayName }} # istio-gw-cnvrg
+  hosts:
+  - {{ .Values.network.hostname }} # keycloak.aks-cicd-16661.cicd.cnvrg.me
+  http:
+  - retries:
+      attempts: 5
+      perTryTimeout: 3600s
+    route:
+    - destination:
+        host: {{ printf "keycloak.%s.svc.cluster.local" .Values.namespace }}
+        port:
+          number: 80
+          {{- if .Values.network.https.enabled }}
+          headers:
+            request:
+              set:
+                x-forwarded-proto: https
+          {{- end }}
+    timeout: 18000s
+{{- end }}

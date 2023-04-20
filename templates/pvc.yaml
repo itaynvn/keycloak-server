@@ -1,0 +1,13 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: keycloak-data
+spec:
+  {{- if eq .Values.storage.storageClass "default" }}
+  storageClassName: {{ .Values.storage.storageClass }}
+  {{- end }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}

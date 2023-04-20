@@ -1,0 +1,11 @@
+apiVersion: v2
+name: keycloak
+description: deploys a single instance of keycloak server, using latest image.
+type: application
+version: 0.1.0
+appVersion: "21.1.0"
+maintainers:
+  - name: Itay
+    email: itay.anavian@cnvrg.io
+files:
+  - helpers.tpl

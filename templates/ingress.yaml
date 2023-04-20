@@ -1,0 +1,29 @@
+{{- if eq .Values.network.ingressType "nginx" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 5G
+    nginx.ingress.kubernetes.io/proxy-read-timeout: 18000s
+    nginx.ingress.kubernetes.io/proxy-send-timeout: 18000s
+  name: keycloak
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ .Values.network.hostname }}
+    http:
+      paths:
+      - backend:
+          service:
+            name: keycloak
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  {{- if .Values.network.https.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.network.hostname }}
+      secretName: {{ .Values.network.https.certSecretName }}
+  {{- end }}
+{{- end }}
