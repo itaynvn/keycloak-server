@@ -1,4 +1,4 @@
-name: Build and Release Helm Chart
+name: Release Helm Chart
 
 on:
   push:
@@ -13,26 +13,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Helm environment
-        uses: HelmPack/setup-helm@v1
+      - name: Bump version
+        id: bump_version
+        uses: helm/charts@v2
         with:
-          helm-version: '3.x'
+          chart: keycloak-server
+          path: ./keycloak-server
+          version: auto
 
-      - name: Bump chart version
-        run: |
-          cd keycloak-server
-          helm version --short | awk '{print $2}' | grep -Eo '^[0-9]+(\.[0-9]+)*' > VERSION
-          VERSION_NUMBER=$(cat VERSION)
-          sed -i "s/version: [0-9]\+\.[0-9]\+\.[0-9]\+/version: ${VERSION_NUMBER}/" Chart.yaml
+      - name: Setup Helm Chart Releaser
+        uses: steebchen/helm-chart-releaser@v1.1.2
 
-      - name: Package chart
-        run: |
-          cd keycloak-server
-          helm package .
-
-      - name: Create release
-        uses: softprops/action-gh-release@v1
+      - name: Release Helm Chart
+        uses: steebchen/helm-chart-releaser@v1.1.2
         with:
-          files: keycloak-server-*.tgz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          chart_folder: ./keycloak-server
+          version: ${{ steps.bump_version.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
