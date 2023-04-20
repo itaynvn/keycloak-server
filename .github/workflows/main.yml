@@ -1,4 +1,4 @@
-name: Package Helm Chart
+name: Build and Release Helm Chart
 
 on:
   push:
@@ -6,27 +6,33 @@ on:
       - main
 
 jobs:
-  package:
+  release:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      
-      - name: Setup Helm
+
+      - name: Set up Helm environment
         uses: HelmPack/setup-helm@v1
         with:
           helm-version: '3.x'
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-      - name: Package Chart
-        run: helm package keycloak-server
+      - name: Bump chart version
+        run: |
+          cd keycloak-server
+          helm version --short | awk '{print $2}' | grep -Eo '^[0-9]+(\.[0-9]+)*' > VERSION
+          VERSION_NUMBER=$(cat VERSION)
+          sed -i "s/version: [0-9]\+\.[0-9]\+\.[0-9]\+/version: ${VERSION_NUMBER}/" Chart.yaml
 
-      - name: Upload Chart to Releases
-        uses: actions/upload-release-asset@v1
+      - name: Package chart
+        run: |
+          cd keycloak-server
+          helm package .
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
         with:
-          asset_path: keycloak-server-*.tgz
-          asset_name: keycloak-server-$(date +"%Y%m%d%H%M%S").tgz
-          release_id: ${{ github.event.release.id }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          files: keycloak-server-*.tgz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
