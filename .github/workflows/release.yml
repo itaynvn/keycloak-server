@@ -1,9 +1,11 @@
-name: Release Charts
+name: Package and release chart
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - Chart.yaml
+      - values.yaml
+      - templates/**
 
 jobs:
   release:
@@ -11,21 +13,17 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - name: Git checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Git configuration
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          
-      - name: chow pwd
+      - name: Install zip
+        run: sudo apt-get -y install zip
+
+      - name: show pwd
         run: |
           pwd
           ls -la -R
-          
+
       - name: Install Helm
         uses: azure/setup-helm@v3
         env:
