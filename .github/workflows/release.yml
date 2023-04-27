@@ -29,6 +29,28 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Bump version number
+        run: |
+          version=$(grep -m 1 'version' Chart.yaml | awk '{print $2}')
+          echo $version
+          major=$(echo $version | cut -d'.' -f1)
+          minor=$(echo $version | cut -d'.' -f2)
+          patch=$(echo $version | cut -d'.' -f3)
+          new_minor=$(expr $minor + 1)
+          echo "NEW_VERSION=$major.$new_minor.$patch" >> $GITHUB_ENV
+          echo ${{ env.NEW_VERSION }}
+
+      - name: Create new release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        with:
+          tag_name: ${{ env.NEW_VERSION }}
+          release_name: Release ${{ env.NEW_VERSION }}
+          draft: false
+          prerelease: false
+
       - name: Run helm-chart-releaser action
         uses: helm/chart-releaser-action@v1.5.0
         with:
