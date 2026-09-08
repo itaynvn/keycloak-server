@@ -16,3 +16,5 @@ Helm chart for deploying a simple keycloak server
 <!-- Security scan triggered at 2026-08-31 18:29:50 -->
 
 <!-- Security scan triggered at 2026-09-02 06:42:08 -->
+
+<!-- Security scan triggered at 2026-09-08 02:14:44 -->
